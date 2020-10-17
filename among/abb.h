@@ -14,8 +14,8 @@ typedef char * tipoclave;
 typedef struct {
     char nombreJugador[L];
     char rol;
-    char tarea;
-    char tareaLugar;
+    char tarea[L];
+    char tareaLugar[L];
 } tipoelem;
 //////////////////////////////////////////FIN PARTE MODIFICABLE
 		

@@ -43,19 +43,28 @@ int menu(abb *jugadores) {
     printf("s.\tSalir de la partida\n");
     printf("\n> ");
 
-    char c;
-    scanf(" %c", &c);
+    char *c = (char *) malloc(sizeof(char));
+    gets(c);
     printf("\n");
 
-    switch (c) {
+    char usuario[L];
+    switch (*c) {
         // Alta de un jugador
         case 'a':
         case 'A':
+            printf("Nombre de usuario (tiene que empezar por @):\n");
+            printf("> ");
+            gets(usuario);
+            altaJugador(jugadores, usuario);
             break;
 
         // Baja de un jugador
         case 'b':
         case 'B':
+            printf("Nombre de usuario (tiene que empezar por @):\n");
+            printf("> ");
+            gets(usuario);
+            bajaJugador(jugadores, usuario);
             break;
 
         // Listado por orden alfabética de los jugadores
@@ -72,5 +81,6 @@ int menu(abb *jugadores) {
             break;
     }
 
+    free(c);
     return 1;
 }

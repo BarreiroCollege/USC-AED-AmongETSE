@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 ///////////////////////// ESTRUCTURAS DE DATOS
 
@@ -21,12 +22,22 @@ tipoclave _clave_elem(tipoelem *E) {
     return E->nombreJugador;
 }
 
+// Compara cadenas de texto independientemente de si es mayúscula o minúscula
+// https://stackoverflow.com/a/5820991
+int strcicmp(char const *a, char const *b) {
+    for (;; a++, b++) {
+        int d = tolower((unsigned char)*a) - tolower((unsigned char)*b);
+        if (d != 0 || !*a)
+            return d;
+    }
+}
+
 /* Esta funcion puente nos permite modificar el tipo de
  * de datos del TAD sin tener que cambiar todas las 
  * comparaciones del resto de la biblioteca y en su lugar
  * cambiando solo esta. */
 int _comparar_claves(tipoclave cl1, tipoclave cl2) {
-    int r = strcmp(cl1, cl2);
+    int r = strcicmp(cl1, cl2);
     return r < 0 ? -1 : r > 0 ? 1 : 0;
 }
 

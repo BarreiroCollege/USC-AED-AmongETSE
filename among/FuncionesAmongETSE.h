@@ -13,13 +13,13 @@ void leerArchivo(abb *A);
  * Inserta un nuevo jugador en el árbol
  * @param A
  */
-void altaJugador(abb *A);
+void altaJugador(abb *jugadores, char *jugador);
 
 /**
  * Elimina un jugador en el árbol
  * @param A
  */
-void bajaJugador(abb *A);
+void bajaJugador(abb *jugadores, char *jugador);
 
 /**
  * Imprime en inorden (alfabético) los nodos del árbol
@@ -52,5 +52,5 @@ void consultarPorHabitacion(abb A);
 void inorden(abb A);
 
 
-#endif	// FUNCIONESAMONGETSE_H
+#endif    // FUNCIONESAMONGETSE_H
 
