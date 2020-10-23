@@ -9,10 +9,10 @@
 
 #define SALA_MOTORES "Motores"
 #define SALA_ELECTRICIDAD "Electricidad"
-#define SALA_CAFETERIA "Cafetería"
+#define SALA_CAFETERIA "Cafeteria"
 #define SALA_COMUNICACIONES "Comunicaciones"
 #define SALA_ARMERIA "Armeria"
-#define SALA_NAVEGACION "Navegación"
+#define SALA_NAVEGACION "Navegacion"
 #define SALA_O2 "O2"
 #define SALA_SEGURIDAD "Seguridad"
 #define SALA_ESCUDOS "Escudos"

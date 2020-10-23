@@ -43,28 +43,21 @@ int menu(abb *jugadores) {
     printf("s.\tSalir de la partida\n");
     printf("\n> ");
 
-    char *c = (char *) malloc(sizeof(char));
-    gets(c);
+    char c;
+    scanf(" %c", &c);
     printf("\n");
 
-    char usuario[L];
-    switch (*c) {
+    switch (c) {
         // Alta de un jugador
         case 'a':
         case 'A':
-            printf("Nombre de usuario (tiene que empezar por @):\n");
-            printf("> ");
-            gets(usuario);
-            altaJugador(jugadores, usuario);
+            altaJugador(jugadores);
             break;
 
         // Baja de un jugador
         case 'b':
         case 'B':
-            printf("Nombre de usuario (tiene que empezar por @):\n");
-            printf("> ");
-            gets(usuario);
-            bajaJugador(jugadores, usuario);
+            bajaJugador(jugadores);
             break;
 
         // Listado por orden alfabética de los jugadores
@@ -73,14 +66,32 @@ int menu(abb *jugadores) {
             listadoJugadores(*jugadores);
             break;
 
+        // Generar datos iniciales de la partida
+        case 'g':
+        case 'G':
+            generarPartida(jugadores);
+            break;
+
+        // Consulta por usuario de la última tarea asignada
+        case 'u':
+        case 'U':
+            consultarJugador(*jugadores);
+            break;
+
+        // Consulta por habitación
+        case 'h':
+        case 'H':
+            consultarPorHabitacion(*jugadores);
+            break;
+
         case 's':
             printf("Saliendo...\n");
             return 0;
+
         default:
             printf("Opción no válida\n");
             break;
     }
 
-    free(c);
     return 1;
 }

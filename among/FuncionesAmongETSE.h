@@ -13,25 +13,25 @@ void leerArchivo(abb *A);
  * Inserta un nuevo jugador en el árbol
  * @param A
  */
-void altaJugador(abb *jugadores, char *jugador);
+void altaJugador(abb *jugadores);
 
 /**
  * Elimina un jugador en el árbol
  * @param A
  */
-void bajaJugador(abb *jugadores, char *jugador);
+void bajaJugador(abb *jugadores);
 
 /**
  * Imprime en inorden (alfabético) los nodos del árbol
  * @param A
  */
-void listadoJugadores(abb A);
+void listadoJugadores(abb jugadores);
 
 /**
  * Genera una nueva partida, asignando valores a cada jugador
  * @param A
  */
-void generarPartida(abb *A);
+void generarPartida(abb *jugadores);
 
 /**
  * Consulta los datos de un jugador
