@@ -54,3 +54,5 @@ dkms.conf
 # CLion
 .idea/
 cmake-build-debug/
+
+*.zip
