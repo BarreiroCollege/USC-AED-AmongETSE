@@ -14,7 +14,9 @@ unsigned int _aleatorio(int inf, int sup) {
 
 // Función privada para inicializar los datos de un jugador, necesaria en varias funciones públicas
 void _inicializarJugador(tipoelem *registro) { // inicializa los campos rol,descripcionTarea y lugarTarea
+    // Se utiliza el caracter de espacio para indicar un rol sin asignar
     registro->rol = ' ';
+    // Cadenas de texto vacías para las tareas
     strcpy(registro->tarea, "");
     strcpy(registro->tareaLugar, "");
 }
@@ -24,6 +26,7 @@ void _limpiarDatos(abb jugadores) {
     if (!es_vacio(jugadores)) {
         leer(jugadores, &E);
         _inicializarJugador(&E);
+        modificar(jugadores, E);
 
         _limpiarDatos(izq(jugadores));
         _limpiarDatos(der(jugadores));
@@ -32,6 +35,7 @@ void _limpiarDatos(abb jugadores) {
 
 // Función privada que imprime los datos de un jugador
 void _imprimirJugador(tipoelem E) {
+    // Se formatean los datos del jugador
     printf("| %-12s | %c | %-14s > %-27s |\n", E.nombreJugador, E.rol, E.tareaLugar, E.tarea);
 }
 
@@ -42,6 +46,7 @@ void altaJugador(abb *jugadores) {
     printf("> ");
     scanf(" %s", nuevo.nombreJugador);
 
+    // Si el nombre no comienza por arroba, rechazar
     if (nuevo.nombreJugador[0] != '@') {
         printf("Los nombres de jugador han de empezar por @\n");
         return;
@@ -50,6 +55,7 @@ void altaJugador(abb *jugadores) {
     if (es_miembro(*jugadores, nuevo)) {
         printf("El jugador %s ya está dado de alta!\n", nuevo.nombreJugador);
     } else {
+        // Si el jugador no está en la partida, se inicializa y se inserta en el árbol
         _inicializarJugador(&nuevo);
         insertar(jugadores, nuevo);
         printf("%s dado de alta\n", nuevo.nombreJugador);
@@ -62,6 +68,8 @@ void bajaJugador(abb *jugadores) {
     printf("Nombre de usuario (tiene que empezar por @):\n");
     printf("> ");
     scanf(" %s", viejo.nombreJugador);
+
+    // Si el nombre no comienza por arroba, rechazar
     if (viejo.nombreJugador[0] != '@') {
         printf("Los nombres de jugador han de empezar por @\n");
         return;
@@ -70,6 +78,7 @@ void bajaJugador(abb *jugadores) {
     if (!es_miembro(*jugadores, viejo)) {
         printf("El jugador %s no está en el juego!\n", viejo.nombreJugador);
     } else {
+        // Si el jugador está en la partida, se elimina del árbol
         suprimir(jugadores, viejo);
         printf("%s dado de baja\n", viejo.nombreJugador);
     }
@@ -88,10 +97,12 @@ void _inorden(abb A) {
 
 //Función pública que imprime los nombres de los jugadores por orden alfabético
 void listadoJugadores(abb jugadores) {
+    // El listado de jugadores se realiza mediante un recorrido inorden
     _inorden(jugadores);
 }
 
 void _asignarTarea(tipoelem *registro) {
+    // Se genera un número aleatorio entr 1 y 8 para escoger la tarea
     switch (_aleatorio(1, 8)) {
         case 1:
             strcpy(registro->tarea, TAREA_MOTOR);
@@ -103,6 +114,7 @@ void _asignarTarea(tipoelem *registro) {
             break;
         case 3:
             strcpy(registro->tarea, TAREA_DATOS);
+            // En caso de datos, hay 5 posibles localizaciones
             switch (_aleatorio(1, 5)) {
                 case 1:
                     strcpy(registro->tareaLugar, SALA_CAFETERIA);
@@ -123,6 +135,7 @@ void _asignarTarea(tipoelem *registro) {
             break;
         case 4:
             strcpy(registro->tarea, TAREA_ENERGIA);
+            // En caso de energía, hay 5 posibles localizaciones
             switch (_aleatorio(1, 7)) {
                 case 1:
                     strcpy(registro->tareaLugar, SALA_NAVEGACION);
@@ -166,67 +179,89 @@ void _asignarTarea(tipoelem *registro) {
     }
 }
 
-//Función que genera los datos de una partida: jugadores, roles y tareas
+// Función que genera los datos de una partida: jugadores, roles y tareas
 void generarPartida(abb *jugadores) {
+    // nJugadores = char que se obtiene de preguntar el número de jugadores
     char *nJugadores = (char *) malloc(sizeof(char) * 2);
+    // Modo de juego que el usuario desea, siendo M manual y A automático
     char modoJuego;
 
+    // Se limpian los datos antes de cada generación
     _limpiarDatos(*jugadores);
 
     printf("Número de jugadores (4-10):\n");
     printf("> ");
     scanf(" %s", nJugadores);
 
+    // numJugadores = número de jugadores que se quiere meter en la partida
     int numJugadores = atoi(nJugadores);
+    // Se comprueba que el número de jugadores está comprendido entre 4 y 10
     if (numJugadores < 4 || numJugadores > 10) {
         printf("El número de jugadores ha de estar comprendido entre 4 y 10\n");
         return;
     }
 
+    // Se pregunta el modo de selección de jugadores
     printf("Selección de jugadores (A = Aleatorio | M = Manual)\n");
     printf("> ");
     scanf(" %s", &modoJuego);
 
+    // nImposores = número de impostores que tendrá la partida
     int nImpostores = (int) round(numJugadores / 5.0);
+    // impostores = lista de ints, siendo cada int la posición del
+    //              jugador que va a ser impostor, siendo entre 0 y 10
     int *impostores = (int *) malloc(sizeof(int) * nImpostores);
     for (int i = 0; i < nImpostores; i++) {
+        // Primero se genera un número aleatorio entre 0 y el número de jugadores
+        // para saber quien va a ser el primer impostor
         int pos = (int) _aleatorio(0, numJugadores - 1);
         if (i == 1) {
+            // Como hay de máximo dos impostores, en el segundo impostor
+            // hay que asegurarse de que no coincida con el primero
             while (pos == *impostores) {
                 pos = (int) _aleatorio(0, numJugadores - 1);
             }
         }
+        // Se guarda esta posición
         *(impostores + i) = pos;
     }
 
     tipoelem jugadorAux;
+    // En el caso de Manual, esta variable va a tener el número de jugadores que tenemos hasta el momento
     int jugadoresAnadidos = 0;
     switch (modoJuego) {
         case 'M':
         case 'm':
+            // Mientras no hemos añadido suficientes jugadores
             while (jugadoresAnadidos < numJugadores) {
+                // Se pregunta por usuarios
                 printf("Jugador a añadir a la partida(tiene que empezar por @):\n");
                 printf("> ");
                 scanf(" %s", jugadorAux.nombreJugador);
 
+                // Si el jugador no empieza por arroba, se rechaza, igual que si no es miembro
                 if (*jugadorAux.nombreJugador != '@') {
                     printf("El nombre de jugador tiene que empezar por @\n\n");
                 } if (!es_miembro(*jugadores, jugadorAux)) {
                     printf("El jugador %s no existe\n\n", jugadorAux.nombreJugador);
                 } else {
+                    // Se busca el nodo de jugadores que coincide con el nombre introducido
                     buscar_nodo(*jugadores, jugadorAux.nombreJugador, &jugadorAux);
+                    // Y en caso de ya tener un rol, quiere decir que ya se metió en la partida
                     if (jugadorAux.rol != ' ') {
                         printf("El jugador %s ya está en la partida\n\n", jugadorAux.nombreJugador);
                     } else {
+                        // Si el índice del jugador coincide con algún índice de impostor, se le asigna
+                        // el rol de impostor, sino el de tripulante (crewmate)
                         if (*impostores == jugadoresAnadidos ||
                             (nImpostores == 2 && *(impostores + 1) == jugadoresAnadidos)) {
                             jugadorAux.rol = 'I';
                         } else {
                             jugadorAux.rol = 'C';
                         }
+                        // Se le asigna una tarea aleatoriamente, y se actualiza en el arbol
                         _asignarTarea(&jugadorAux);
-                        suprimir(jugadores, jugadorAux);
-                        insertar(jugadores, jugadorAux);
+                        modificar(*jugadores, jugadorAux);
                         printf("%s añadido a la partida\n\n", jugadorAux.nombreJugador);
                         jugadoresAnadidos++;
                     }
@@ -235,60 +270,78 @@ void generarPartida(abb *jugadores) {
             break;
 
         default:
+            // Por defecto se usa el modo aleatorio
             printf("Modo de juego no reconocido, usando automático...\n");
         case 'A':
         case 'a':
+            // Se hace un for loop para el máximo de jugadores
             for (int i = 0; i < numJugadores; i++) {
+                // Esta variable r es una variable comodín para recorrer el árbol de forma totalmente
+                // aleatoria. Se explica más abajo los posibles valores.
                 int r = 0;
+                // Arbol auxiliar para recorrer los jugadores
                 abb aux;
                 crear(&aux);
                 aux = *jugadores;
                 tipoelem nodo;
+                // Si r=2, entonces es que la raiz actual del arbol auxiliar es apta para ser seleccionada
                 while (r != 2) {
+                    // Se genera un valor aleatorio posible de 1, 2 o 3
                     r = (int) _aleatorio(1, 3);
+                    // Si es r=1, se mueve a la izquierda
                     if (r == 1) {
                         aux = izq(aux);
+                    // Si es r=3, se mueve a la derecha
                     } else if (r == 3) {
                         aux = der(aux);
+                    // Si es r=2, se queda en el nodo y lo lee
                     } else if (r == 2) {
                         leer(aux, &nodo);
                         buscar_nodo(*jugadores, nodo.nombreJugador, &jugadorAux);
+                        // En el caso de ya tener un rol asignado, se pone r=0 y se vuelve a empezar
                         if (jugadorAux.rol != ' ') {
                             r = 0;
                             aux = *jugadores;
                         }
                     }
 
+                    // Y si el arbol auxiliar está vació, se vuelve a la cima de jugadores
+                    // y se repite el proceso
                     if (es_vacio(aux)) {
                         aux = *jugadores;
                     }
                 }
+
+                // Se comprueba si el índice del jugador es alguno de los impostores
                 if (*impostores == i || (nImpostores == 2 && *(impostores + 1) == i)) {
                     jugadorAux.rol = 'I';
                 } else {
                     jugadorAux.rol = 'C';
                 }
+                // Se le asigna tarea y se actualiza en el árbol
                 _asignarTarea(&jugadorAux);
-                suprimir(jugadores, jugadorAux);
-                insertar(jugadores, jugadorAux);
+                modificar(*jugadores, jugadorAux);
             }
             break;
     }
     printf("Partida creada\n");
 }
 
-//Función que imprime los datos de un usuario cuyo nombre se introduce por teclado
+// Función que imprime los datos de un usuario cuyo nombre se introduce por teclado
 void consultarJugador(abb jugadores) {
+    // Se pregunta al usuario por el nombre del jugador
     tipoelem j;
     printf("Nombre de usuario (tiene que empezar por @):\n");
     printf("> ");
     scanf(" %s", j.nombreJugador);
 
+    // Se rechaza si no empieza por arroba
     if (j.nombreJugador[0] != '@') {
         printf("Los nombres de jugador han de empezar por @\n");
         return;
     }
 
+    // Si no es miembro no se hace nada, pero si existe se busca el nodo y se imprime
     if (!es_miembro(jugadores, j)) {
         printf("El jugador %s no existe en la partida!\n", j.nombreJugador);
     } else {
@@ -297,14 +350,18 @@ void consultarJugador(abb jugadores) {
     }
 }
 
+// Función privada recursiva que imprime los jugadores en la misma habitación
 void _buscarHabitacion(abb jugadores, abb* habitaciones, char* habitacion) {
     tipoelem E;
+    // Si los jugadores no están vacíos, se lee el elemento
     if (!es_vacio(jugadores)) {
         leer(jugadores, &E);
+        // Y si la habitación es la misma a la deseada, se mete en el árbol de habitaciones
         if (strcmp(E.tareaLugar, habitacion) == 0) {
             insertar(habitaciones, E);
         }
 
+        // Se repite el mismo proceso con los posibles hijos
         _buscarHabitacion(izq(jugadores), habitaciones, habitacion);
         _buscarHabitacion(der(jugadores), habitaciones, habitacion);
     }
@@ -312,6 +369,7 @@ void _buscarHabitacion(abb jugadores, abb* habitaciones, char* habitacion) {
 
 //Función que imprime todos los usuarios que están en una habitación determinada
 void consultarPorHabitacion(abb jugadores) {
+    // Se pregunta la habitación que se desea
     char *h = (char *) malloc(sizeof(int));
     printf("Escoge una habitación:\n");
     printf("  1. %s\n", SALA_MOTORES);
@@ -326,6 +384,7 @@ void consultarPorHabitacion(abb jugadores) {
     printf("> ");
     scanf(" %s", h);
 
+    // Se comprueba que el número de habitación sea correcto
     int habitacion = atoi(h);
     if (habitacion < 1 || habitacion > 9) {
         printf("El código introducido no es una habitación válida.\n");
@@ -333,9 +392,11 @@ void consultarPorHabitacion(abb jugadores) {
     }
     printf("\n");
 
-    char lugar[L];
+    char lugar[L*2];
+    // Se crea un árbol auxiliar con el que poder detectar la habitación
     abb habitaciones;
     crear(&habitaciones);
+    // Se copia la habitación a la variable a mandar a la función recursiva
     switch (habitacion) {
         case 1:
             strcpy(lugar, SALA_MOTORES);
@@ -368,9 +429,12 @@ void consultarPorHabitacion(abb jugadores) {
             break;
     }
 
+    // Se busca pro habitación
     _buscarHabitacion(jugadores, &habitaciones, lugar);
     printf("Jugadores en %s:\n", lugar);
+    // Y se imprime los jugadores en la habitación
     listadoJugadores(habitaciones);
+    // No se puede destruir el árbol, ya que sus hijos son los jugadores
 }
 
 

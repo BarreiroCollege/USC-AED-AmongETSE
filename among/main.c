@@ -84,7 +84,9 @@ int menu(abb *jugadores) {
             consultarPorHabitacion(*jugadores);
             break;
 
+        // Salir del programa...
         case 's':
+            // Se destruye en el main
             printf("Saliendo...\n");
             return 0;
 

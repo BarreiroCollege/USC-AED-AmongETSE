@@ -7,19 +7,19 @@
  */
 
 ///////////////////////////////////////INICIO PARTE MODIFICABLE
-#define L 25
+#define L 20
 
-typedef char * tipoclave;
+typedef char *tipoclave;
 
 typedef struct {
     char nombreJugador[L];
     char rol;
-    char tarea[L];
-    char tareaLugar[L];
+    char tarea[L * 3];
+    char tareaLugar[L * 2];
 } tipoelem;
 //////////////////////////////////////////FIN PARTE MODIFICABLE
-		
-typedef struct celda * abb;//tipo opaco
+
+typedef struct celda *abb;//tipo opaco
 
 /////////////////////////////// FUNCIONES
 
@@ -48,11 +48,13 @@ unsigned es_vacio(abb A);
  * @param A - Arbol original
  */
 abb izq(abb A);
+
 /**
  * Devuelve el subarbol derecho de A
  * @param A - Arbol original
  */
 abb der(abb A);
+
 /**
  * Recupera la informacion de la celda de la raiz del arbol
  * @param A
@@ -85,17 +87,20 @@ void buscar_nodo(abb A, tipoclave cl, tipoelem *nodo);
  * @param E Informacion del nuevo nodo.
  */
 void insertar(abb *A, tipoelem E);
+
 /**
  * Suprime el nodo del arbol <A>
  * @param A
  * @param E
  */
-void suprimir(abb *A,tipoelem E);
+void suprimir(abb *A, tipoelem E);
+
 /**
  * Busca el nodo con clave la del nodo y lo modifica.
  * @param A
  * @param nodo
  */
 void modificar(abb A, tipoelem nodo);
-#endif	// ABB_H
+
+#endif    // ABB_H
 
