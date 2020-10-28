@@ -7,15 +7,15 @@
  */
 
 ///////////////////////////////////////INICIO PARTE MODIFICABLE
-#define L 20
+#include "ConstantesAmongETSE.h"
+#include "cola.h"
 
 typedef char *tipoclave;
 
 typedef struct {
     char nombreJugador[L];
     char rol;
-    char tarea[L * 3];
-    char tareaLugar[L * 2];
+    cola tareas;
 } tipoelem;
 //////////////////////////////////////////FIN PARTE MODIFICABLE
 

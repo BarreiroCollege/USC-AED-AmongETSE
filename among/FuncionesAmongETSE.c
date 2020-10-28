@@ -17,8 +17,7 @@ void _inicializarJugador(tipoelem *registro) { // inicializa los campos rol,desc
     // Se utiliza el caracter de espacio para indicar un rol sin asignar
     registro->rol = ' ';
     // Cadenas de texto vacías para las tareas
-    strcpy(registro->tarea, "");
-    strcpy(registro->tareaLugar, "");
+    crear_cola(&registro->tareas);
 }
 
 void _limpiarDatos(abb jugadores) {
@@ -33,10 +32,34 @@ void _limpiarDatos(abb jugadores) {
     }
 }
 
+// Función privada que imprime una tarea
+void _imprimirTarea(tipoelemCola tarea) {
+    printf("| %-12s | %c || %-27s > %-14s |\n", "", ' ', tarea.tarea, tarea.tareaLugar);
+}
+
+// Función privada que imprime las tareas de un jugador
+void _imprimirTareas(cola *tareas) {
+    cola aux;
+    crear_cola(&aux);
+
+    tipoelemCola tarea;
+    for (int i = 1; !es_vacia_cola(*tareas); i++) {
+        tarea = primero(*tareas);
+        suprimir_cola(tareas);
+        _imprimirTarea(tarea);
+        insertar_cola(&aux, tarea);
+    }
+    for (int i = 1; !es_vacia_cola(aux); i++) {
+        tarea = primero(aux);
+        suprimir_cola(&aux);
+        insertar_cola(tareas, tarea);
+    }
+}
+
 // Función privada que imprime los datos de un jugador
 void _imprimirJugador(tipoelem E) {
     // Se formatean los datos del jugador
-    printf("| %-12s | %c | %-14s > %-27s |\n", E.nombreJugador, E.rol, E.tareaLugar, E.tarea);
+    printf("| %-12s | %c || %-14s   %-27s |\n", E.nombreJugador, E.rol, "", "");
 }
 
 // Función que añade un jugador al árbol
@@ -91,6 +114,7 @@ void _inorden(abb A) {
         _inorden(izq(A));
         leer(A, &E);
         _imprimirJugador(E);
+        _imprimirTareas(&E.tareas);
         _inorden(der(A));
     }
 }
@@ -103,84 +127,105 @@ void listadoJugadores(abb jugadores) {
 
 void _asignarTarea(tipoelem *registro) {
     // Se genera un número aleatorio entr 1 y 8 para escoger la tarea
+    tipoelemCola tarea;
     switch (_aleatorio(1, 8)) {
         case 1:
-            strcpy(registro->tarea, TAREA_MOTOR);
-            strcpy(registro->tareaLugar, SALA_MOTORES);
+            strcpy(tarea.tarea, TAREA_MOTOR);
+            strcpy(tarea.tareaLugar, SALA_MOTORES);
             break;
         case 2:
-            strcpy(registro->tarea, TAREA_DISTRIBUIDOR);
-            strcpy(registro->tareaLugar, SALA_ELECTRICIDAD);
+            strcpy(tarea.tarea, TAREA_DISTRIBUIDOR);
+            strcpy(tarea.tareaLugar, SALA_ELECTRICIDAD);
             break;
         case 3:
-            strcpy(registro->tarea, TAREA_DATOS);
+            strcpy(tarea.tarea, TAREA_DATOS);
             // En caso de datos, hay 5 posibles localizaciones
             switch (_aleatorio(1, 5)) {
                 case 1:
-                    strcpy(registro->tareaLugar, SALA_CAFETERIA);
+                    strcpy(tarea.tareaLugar, SALA_CAFETERIA);
                     break;
                 case 2:
-                    strcpy(registro->tareaLugar, SALA_COMUNICACIONES);
+                    strcpy(tarea.tareaLugar, SALA_COMUNICACIONES);
                     break;
                 case 3:
-                    strcpy(registro->tareaLugar, SALA_ARMERIA);
+                    strcpy(tarea.tareaLugar, SALA_ARMERIA);
                     break;
                 case 4:
-                    strcpy(registro->tareaLugar, SALA_ELECTRICIDAD);
+                    strcpy(tarea.tareaLugar, SALA_ELECTRICIDAD);
                     break;
                 case 5:
-                    strcpy(registro->tareaLugar, SALA_NAVEGACION);
+                    strcpy(tarea.tareaLugar, SALA_NAVEGACION);
                     break;
             }
             break;
         case 4:
-            strcpy(registro->tarea, TAREA_ENERGIA);
+            strcpy(tarea.tarea, TAREA_ENERGIA);
             // En caso de energía, hay 5 posibles localizaciones
             switch (_aleatorio(1, 7)) {
                 case 1:
-                    strcpy(registro->tareaLugar, SALA_NAVEGACION);
+                    strcpy(tarea.tareaLugar, SALA_NAVEGACION);
                     break;
                 case 2:
-                    strcpy(registro->tareaLugar, SALA_O2);
+                    strcpy(tarea.tareaLugar, SALA_O2);
                     break;
                 case 3:
-                    strcpy(registro->tareaLugar, SALA_SEGURIDAD);
+                    strcpy(tarea.tareaLugar, SALA_SEGURIDAD);
                     break;
                 case 4:
-                    strcpy(registro->tareaLugar, SALA_ARMERIA);
+                    strcpy(tarea.tareaLugar, SALA_ARMERIA);
                     break;
                 case 5:
-                    strcpy(registro->tareaLugar, SALA_COMUNICACIONES);
+                    strcpy(tarea.tareaLugar, SALA_COMUNICACIONES);
                     break;
                 case 6:
-                    strcpy(registro->tareaLugar, SALA_ESCUDOS);
+                    strcpy(tarea.tareaLugar, SALA_ESCUDOS);
                     break;
                 case 7:
-                    strcpy(registro->tareaLugar, SALA_MOTORES);
+                    strcpy(tarea.tareaLugar, SALA_MOTORES);
                     break;
             }
             break;
         case 5:
-            strcpy(registro->tarea, TAREA_ESCUDOS);
-            strcpy(registro->tareaLugar, SALA_ESCUDOS);
+            strcpy(tarea.tarea, TAREA_ESCUDOS);
+            strcpy(tarea.tareaLugar, SALA_ESCUDOS);
             break;
         case 6:
-            strcpy(registro->tarea, TAREA_DIRECCION);
-            strcpy(registro->tareaLugar, SALA_NAVEGACION);
+            strcpy(tarea.tarea, TAREA_DIRECCION);
+            strcpy(tarea.tareaLugar, SALA_NAVEGACION);
             break;
         case 7:
-            strcpy(registro->tarea, TAREA_FILTRO);
-            strcpy(registro->tareaLugar, SALA_O2);
+            strcpy(tarea.tarea, TAREA_FILTRO);
+            strcpy(tarea.tareaLugar, SALA_O2);
             break;
         case 8:
-            strcpy(registro->tarea, TAREA_MAPA);
-            strcpy(registro->tareaLugar, SALA_NAVEGACION);
+            strcpy(tarea.tarea, TAREA_MAPA);
+            strcpy(tarea.tareaLugar, SALA_NAVEGACION);
             break;
+    }
+
+    insertar_cola(&registro->tareas, tarea);
+}
+
+// Función privada para copiar los datos de los jugadores en partida
+void _copiarPartida(abb *jugadores, abb partida) {
+    tipoelem E;
+    if (!es_vacio(partida)) {
+        leer(partida, &E);
+        // Asignar tarea a jugador
+        for (int i = 0; i < 5; i++) {
+            _asignarTarea(&E);
+        }
+        modificar(*jugadores, E);
+        _copiarPartida(jugadores, izq(partida));
+        _copiarPartida(jugadores, der(partida));
     }
 }
 
 // Función que genera los datos de una partida: jugadores, roles y tareas
 void generarPartida(abb *jugadores) {
+    abb partida;
+    crear(&partida);
+
     // nJugadores = char que se obtiene de preguntar el número de jugadores
     char *nJugadores = (char *) malloc(sizeof(char) * 2);
     // Modo de juego que el usuario desea, siendo M manual y A automático
@@ -242,29 +287,26 @@ void generarPartida(abb *jugadores) {
                 // Si el jugador no empieza por arroba, se rechaza, igual que si no es miembro
                 if (*jugadorAux.nombreJugador != '@') {
                     printf("El nombre de jugador tiene que empezar por @\n\n");
-                } if (!es_miembro(*jugadores, jugadorAux)) {
+                } else if (!es_miembro(*jugadores, jugadorAux)) {
                     printf("El jugador %s no existe\n\n", jugadorAux.nombreJugador);
+                } else if (es_miembro(partida, jugadorAux)) {
+                    // Y en caso de ya tener un rol, quiere decir que ya se metió en la partida
+                    printf("El jugador %s ya está en la partida\n\n", jugadorAux.nombreJugador);
                 } else {
                     // Se busca el nodo de jugadores que coincide con el nombre introducido
                     buscar_nodo(*jugadores, jugadorAux.nombreJugador, &jugadorAux);
-                    // Y en caso de ya tener un rol, quiere decir que ya se metió en la partida
-                    if (jugadorAux.rol != ' ') {
-                        printf("El jugador %s ya está en la partida\n\n", jugadorAux.nombreJugador);
+                    // Si el índice del jugador coincide con algún índice de impostor, se le asigna
+                    // el rol de impostor, sino el de tripulante (crewmate)
+                    if (*impostores == jugadoresAnadidos ||
+                        (nImpostores == 2 && *(impostores + 1) == jugadoresAnadidos)) {
+                        jugadorAux.rol = 'I';
                     } else {
-                        // Si el índice del jugador coincide con algún índice de impostor, se le asigna
-                        // el rol de impostor, sino el de tripulante (crewmate)
-                        if (*impostores == jugadoresAnadidos ||
-                            (nImpostores == 2 && *(impostores + 1) == jugadoresAnadidos)) {
-                            jugadorAux.rol = 'I';
-                        } else {
-                            jugadorAux.rol = 'C';
-                        }
-                        // Se le asigna una tarea aleatoriamente, y se actualiza en el arbol
-                        _asignarTarea(&jugadorAux);
-                        modificar(*jugadores, jugadorAux);
-                        printf("%s añadido a la partida\n\n", jugadorAux.nombreJugador);
-                        jugadoresAnadidos++;
+                        jugadorAux.rol = 'C';
                     }
+                    // Se inserta en el árbol de la partida
+                    insertar(&partida, jugadorAux);
+                    printf("%s añadido a la partida\n\n", jugadorAux.nombreJugador);
+                    jugadoresAnadidos++;
                 }
             }
             break;
@@ -291,17 +333,18 @@ void generarPartida(abb *jugadores) {
                     // Si es r=1, se mueve a la izquierda
                     if (r == 1) {
                         aux = izq(aux);
-                    // Si es r=3, se mueve a la derecha
+                        // Si es r=3, se mueve a la derecha
                     } else if (r == 3) {
                         aux = der(aux);
-                    // Si es r=2, se queda en el nodo y lo lee
+                        // Si es r=2, se queda en el nodo y lo lee
                     } else if (r == 2) {
                         leer(aux, &nodo);
-                        buscar_nodo(*jugadores, nodo.nombreJugador, &jugadorAux);
                         // En el caso de ya tener un rol asignado, se pone r=0 y se vuelve a empezar
-                        if (jugadorAux.rol != ' ') {
+                        if (es_miembro(partida, nodo)) {
                             r = 0;
                             aux = *jugadores;
+                        } else {
+                            buscar_nodo(*jugadores, nodo.nombreJugador, &jugadorAux);
                         }
                     }
 
@@ -318,12 +361,14 @@ void generarPartida(abb *jugadores) {
                 } else {
                     jugadorAux.rol = 'C';
                 }
-                // Se le asigna tarea y se actualiza en el árbol
-                _asignarTarea(&jugadorAux);
-                modificar(*jugadores, jugadorAux);
+                // Se inserta en el árbol de la partida
+                insertar(&partida, jugadorAux);
             }
             break;
     }
+
+    // Se copian los datos de partida a los jugadores de main
+    _copiarPartida(jugadores, partida);
     printf("Partida creada\n");
 }
 
@@ -347,18 +392,26 @@ void consultarJugador(abb jugadores) {
     } else {
         buscar_nodo(jugadores, j.nombreJugador, &j);
         _imprimirJugador(j);
+        if (!es_vacia_cola(j.tareas)) {
+            _imprimirTarea(primero(j.tareas));
+        } else {
+            printf("| %-12s | %c || %-44s |\n", "", ' ', "No hay tarea asignada");
+        }
     }
 }
 
 // Función privada recursiva que imprime los jugadores en la misma habitación
-void _buscarHabitacion(abb jugadores, abb* habitaciones, char* habitacion) {
+void _buscarHabitacion(abb jugadores, abb *habitaciones, char *habitacion) {
     tipoelem E;
     // Si los jugadores no están vacíos, se lee el elemento
     if (!es_vacio(jugadores)) {
         leer(jugadores, &E);
-        // Y si la habitación es la misma a la deseada, se mete en el árbol de habitaciones
-        if (strcmp(E.tareaLugar, habitacion) == 0) {
-            insertar(habitaciones, E);
+        if (!es_vacia_cola(E.tareas)) {
+            // Y si la habitación es la misma a la deseada, se mete en el árbol de habitaciones
+            tipoelemCola tarea = primero(E.tareas);
+            if (strcmp(tarea.tareaLugar, habitacion) == 0) {
+                insertar(habitaciones, E);
+            }
         }
 
         // Se repite el mismo proceso con los posibles hijos
@@ -392,7 +445,7 @@ void consultarPorHabitacion(abb jugadores) {
     }
     printf("\n");
 
-    char lugar[L*2];
+    char lugar[L * 2];
     // Se crea un árbol auxiliar con el que poder detectar la habitación
     abb habitaciones;
     crear(&habitaciones);
@@ -452,4 +505,28 @@ void leerArchivo(abb *A) {
         }
         fclose(fp);
     }
+}
+
+// Función privada para insertar una línea en el archivo
+void _insertarLinea(abb jugadores) {
+    tipoelem jugador;
+    if (!es_vacio(jugadores)) {
+        _insertarLinea(izq(jugadores));
+        leer(jugadores, &jugador);
+        FILE *fp;
+        fp = fopen("ETSErsG1.txt", "a+");
+        fprintf(fp, "%s\n", jugador.nombreJugador);
+        fclose(fp);
+        _insertarLinea(der(jugadores));
+    }
+}
+
+// Función para guardar el archivo en el disco
+void guardarArchivo(abb jugadores) {
+    // Vacía el archivo
+    FILE *fp;
+    fp = fopen("ETSErsG1.txt", "w");
+    fclose(fp);
+    // Leer mediante recorrido inorden
+    _insertarLinea(jugadores);
 }

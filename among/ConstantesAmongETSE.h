@@ -1,3 +1,5 @@
+#define L 20
+
 #define TAREA_MOTOR "Alinear la salida del motor"
 #define TAREA_DISTRIBUIDOR "Calibrar distribuidor"
 #define TAREA_DATOS "Descargar datos"

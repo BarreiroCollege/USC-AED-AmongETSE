@@ -46,10 +46,10 @@ void consultarJugador(abb A);
 void consultarPorHabitacion(abb A);
 
 /**
- * Realiza el recorrido inorden del árbol de jugadores
- * @param abb A
+ * Guarda el árbol de jugadores en el archivo de texto
+ * @param jugadores
  */
-void inorden(abb A);
+ void guardarArchivo(abb jugadores);
 
 
 #endif    // FUNCIONESAMONGETSE_H

@@ -40,6 +40,7 @@ int menu(abb *jugadores) {
     printf("g.\tGenerar datos iniciales de la partida\n");
     printf("u.\tConsulta por usuario de la última tarea asignada\n");
     printf("h.\tConsulta por habitación\n");
+    printf("f.\tGuardar archivo\n");
     printf("s.\tSalir de la partida\n");
     printf("\n> ");
 
@@ -82,6 +83,12 @@ int menu(abb *jugadores) {
         case 'h':
         case 'H':
             consultarPorHabitacion(*jugadores);
+            break;
+
+        // Guardar árbol de jugadores en el archivo
+        case 'F':
+        case 'f':
+            guardarArchivo(*jugadores);
             break;
 
         // Salir del programa...
