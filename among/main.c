@@ -5,11 +5,12 @@
 #include "FuncionesAmongETSE.h"
 
 
-int menu(abb *jugadores);
+int menu(abb *jugadores, unsigned short *jugando);
 
 int main(int argc, char** argv) {
     // Semilla para aleatorios, se llamar sólo una vez al principio de main
     srand((unsigned int) time(NULL));
+    unsigned short jugando = 0;
     
     // Crear el árbol de jugadores
     abb jugadores;
@@ -21,7 +22,7 @@ int main(int argc, char** argv) {
     // Menú
     int partida = 1;
     while (partida) {
-        partida = menu(&jugadores);
+        partida = menu(&jugadores, &jugando);
     }
 
     
@@ -31,13 +32,19 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-int menu(abb *jugadores) {
+int menu(abb *jugadores, unsigned short *jugando) {
     printf("\n---------------------\n\n");
     printf("Among ETSE\n\n");
-    printf("a.\tAlta de un jugador\n");
-    printf("b.\tBaja de un jugador\n");
+    if (!*jugando) {
+        printf("a.\tAlta de un jugador\n");
+        printf("b.\tBaja de un jugador\n");
+    }
     printf("l.\tListado por orden alfabética de los jugadores\n");
-    printf("g.\tGenerar datos iniciales de la partida\n");
+    if (!*jugando) {
+        printf("g.\tGenerar datos iniciales de la partida\n");
+    } else {
+        printf("g.\tJugar partida\n");
+    }
     printf("u.\tConsulta por usuario de la última tarea asignada\n");
     printf("h.\tConsulta por habitación\n");
     printf("f.\tGuardar archivo\n");
@@ -64,13 +71,17 @@ int menu(abb *jugadores) {
         // Listado por orden alfabética de los jugadores
         case 'l':
         case 'L':
-            listadoJugadores(*jugadores);
+            listadoJugadores(*jugadores, *jugando);
             break;
 
         // Generar datos iniciales de la partida
         case 'g':
         case 'G':
-            generarPartida(jugadores);
+            if (!*jugando) {
+                *jugando = generarPartida(jugadores);
+            } else {
+                jugarPartida(jugadores);
+            }
             break;
 
         // Consulta por usuario de la última tarea asignada
@@ -82,7 +93,7 @@ int menu(abb *jugadores) {
         // Consulta por habitación
         case 'h':
         case 'H':
-            consultarPorHabitacion(*jugadores);
+            consultarPorHabitacion(*jugadores, *jugando);
             break;
 
         // Guardar árbol de jugadores en el archivo

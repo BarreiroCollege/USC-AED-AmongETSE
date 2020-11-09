@@ -34,7 +34,7 @@ void _limpiarDatos(abb jugadores) {
 
 // Función privada que imprime una tarea
 void _imprimirTarea(tipoelemCola tarea) {
-    printf("| %-12s | %c || %-27s > %-14s |\n", "", ' ', tarea.tarea, tarea.tareaLugar);
+    printf("| %-12s || %-27s > %-14s |\n", "", tarea.tarea, tarea.tareaLugar);
 }
 
 // Función privada que imprime las tareas de un jugador
@@ -59,7 +59,7 @@ void _imprimirTareas(cola *tareas) {
 // Función privada que imprime los datos de un jugador
 void _imprimirJugador(tipoelem E) {
     // Se formatean los datos del jugador
-    printf("| %-12s | %c || %-14s   %-27s |\n", E.nombreJugador, E.rol, "", "");
+    printf("| %-12s || %-27s   %-14s |\n", E.nombreJugador, "", "");
 }
 
 // Función que añade un jugador al árbol
@@ -108,21 +108,29 @@ void bajaJugador(abb *jugadores) {
 }
 
 /* Recorrido inorden del árbol binario */
-void _inorden(abb A) {
+void _listadoJugadores(abb A, int jugando) {
     tipoelem E;
     if (!es_vacio(A)) {
-        _inorden(izq(A));
+        _listadoJugadores(izq(A), jugando);
         leer(A, &E);
-        _imprimirJugador(E);
-        _imprimirTareas(&E.tareas);
-        _inorden(der(A));
+        if ((jugando && E.rol != ' ') || !jugando) {
+            if (E.rol == 'K') {
+                printf("\e[91m");
+            }
+            _imprimirJugador(E);
+            _imprimirTareas(&E.tareas);
+            if (E.rol == 'K') {
+                printf("\e[0m");
+            }
+        }
+        _listadoJugadores(der(A), jugando);
     }
 }
 
 //Función pública que imprime los nombres de los jugadores por orden alfabético
-void listadoJugadores(abb jugadores) {
+void listadoJugadores(abb jugadores, int jugando) {
     // El listado de jugadores se realiza mediante un recorrido inorden
-    _inorden(jugadores);
+    _listadoJugadores(jugadores, jugando);
 }
 
 void _asignarTarea(tipoelem *registro) {
@@ -222,7 +230,7 @@ void _copiarPartida(abb *jugadores, abb partida) {
 }
 
 // Función que genera los datos de una partida: jugadores, roles y tareas
-void generarPartida(abb *jugadores) {
+int generarPartida(abb *jugadores) {
     abb partida;
     crear(&partida);
 
@@ -243,7 +251,7 @@ void generarPartida(abb *jugadores) {
     // Se comprueba que el número de jugadores está comprendido entre 4 y 10
     if (numJugadores < 4 || numJugadores > 10) {
         printf("El número de jugadores ha de estar comprendido entre 4 y 10\n");
-        return;
+        return 0;
     }
 
     // Se pregunta el modo de selección de jugadores
@@ -370,6 +378,171 @@ void generarPartida(abb *jugadores) {
     // Se copian los datos de partida a los jugadores de main
     _copiarPartida(jugadores, partida);
     printf("Partida creada\n");
+    return 1;
+}
+
+// Función privada recursiva que imprime los jugadores en la misma habitación
+void _buscarHabitacion(abb jugadores, abb *habitaciones, char *habitacion) {
+    tipoelem E;
+    // Si los jugadores no están vacíos, se lee el elemento
+    if (!es_vacio(jugadores)) {
+        leer(jugadores, &E);
+        if (!es_vacia_cola(E.tareas)) {
+            // Y si la habitación es la misma a la deseada, se mete en el árbol de habitaciones
+            tipoelemCola tarea = primero(E.tareas);
+            if (strcmp(tarea.tareaLugar, habitacion) == 0) {
+                insertar(habitaciones, E);
+            }
+        }
+
+        // Se repite el mismo proceso con los posibles hijos
+        _buscarHabitacion(izq(jugadores), habitaciones, habitacion);
+        _buscarHabitacion(der(jugadores), habitaciones, habitacion);
+    }
+}
+
+void _seleccionarMuerto(abb jugadores, tipoelem *tripulante) {
+    tipoelem jugador;
+    if (!es_vacio(jugadores)) {
+        _seleccionarMuerto(izq(jugadores), tripulante);
+        leer(jugadores, &jugador);
+        if (jugador.rol == 'C' && ((*tripulante).rol == '\0' || _aleatorio(0, 1))) {
+            *tripulante = jugador;
+        }
+        _seleccionarMuerto(der(jugadores), tripulante);
+    }
+}
+
+void _matar(abb habitaciones, abb jugadores) {
+    tipoelem tripulante;
+    tripulante.rol = '\0';
+    _seleccionarMuerto(habitaciones, &tripulante);
+
+    if (tripulante.rol != '\0') {
+        tripulante.rol = 'K';
+        modificar(jugadores, tripulante);
+        printf("El jugador %s ha muerto\n", tripulante.nombreJugador);
+    }
+}
+
+void _buscarImpostores(abb jugadores, abb jugadores2) {
+    tipoelem jugador;
+    if (!es_vacio(jugadores2)) {
+        _buscarImpostores(jugadores, izq(jugadores2));
+        leer(jugadores2, &jugador);
+        if (jugador.rol == 'I') {
+            abb habitaciones;
+            crear(&habitaciones);
+            _buscarHabitacion(jugadores, &habitaciones, primero(jugador.tareas).tareaLugar);
+            _matar(habitaciones, jugadores);
+        }
+        _buscarImpostores(jugadores, der(jugadores2));
+    }
+}
+
+void _siguienteTarea(tipoelem jugador) {
+    tipoelemCola tarea = primero(jugador.tareas);
+    if (jugador.rol == 'K') {
+        printf("\e[91m");
+    }
+    printf("| %-12s || %-27s > %-14s |\n", jugador.nombreJugador, tarea.tarea, tarea.tareaLugar);
+    if (jugador.rol == 'K') {
+        printf("\e[0m");
+    }
+    suprimir_cola(&jugador.tareas);
+}
+
+void _avanzarMisiones(abb jugadores) {
+    tipoelem jugador;
+    if (!es_vacio(jugadores)) {
+        _avanzarMisiones(izq(jugadores));
+        leer(jugadores, &jugador);
+        if (jugador.rol != ' ') {
+            _siguienteTarea(jugador);
+        }
+        _avanzarMisiones(der(jugadores));
+    }
+}
+
+void _expulsarImpostor(abb jugadores) {
+    tipoelem jugador;
+    while (1) {
+        printf("\nNombre de usuario (tiene que empezar por @) a expulsar:\n");
+        printf("> ");
+        scanf(" %s", jugador.nombreJugador);
+
+        // Si el nombre no comienza por arroba, rechazar
+        if (jugador.nombreJugador[0] != '@') {
+            printf("Los nombres de jugador han de empezar por @\n");
+        }
+
+        if (!es_miembro(jugadores, jugador)) {
+            printf("El jugador %s no existe!\n", jugador.nombreJugador);
+        } else {
+            buscar_nodo(jugadores, jugador.nombreJugador, &jugador);
+            if (jugador.rol != 'C' && jugador.rol != 'I') {
+                printf("El jugador ya está muerto o no está en la partida!\n");
+            } else {
+                if (jugador.rol == 'C') {
+                    printf("El jugador %s era un tripulante!\n", jugador.nombreJugador);
+                } else {
+                    printf("El jugador %s era un impostor!\n", jugador.nombreJugador);
+                }
+                jugador.rol = 'K';
+                modificar(jugadores, jugador);
+                break;
+            }
+        }
+    }
+}
+
+void _comprobarVictoriaR(abb jugadores, int *tareasPendientes, int *tripulantes, int *impostores) {
+    tipoelem jugador;
+    if (!es_vacio(jugadores)) {
+        _comprobarVictoriaR(izq(jugadores), tareasPendientes, tripulantes, impostores);
+        leer(jugadores, &jugador);
+        if (jugador.rol == 'C') {
+            (*tripulantes)++;
+            if (!*tareasPendientes && !es_vacia_cola(jugador.tareas)) {
+                (*tareasPendientes) = 1;
+            }
+        } else if (jugador.rol == 'I') {
+            (*impostores)++;
+        }
+        _comprobarVictoriaR(der(jugadores), tareasPendientes, tripulantes, impostores);
+    }
+}
+
+int _comprobarVictoria(abb jugadores) {
+    int tareasPendientes = 0, tripulantes = 0, impostores = 0;
+    _comprobarVictoriaR(jugadores, &tareasPendientes, &tripulantes, &impostores);
+
+    if (!impostores || !tareasPendientes) {
+        printf("VICTORIA DE TRIPULANTES\n");
+        return 1;
+    } else if (tripulantes <= impostores) {
+        printf("VICTORIA DE IMPOSTORES\n");
+        return -1;
+    }
+    return 0;
+}
+
+void jugarPartida(abb *jugadores) {
+    if (_comprobarVictoria(*jugadores) != 0)
+        return;
+
+    _buscarImpostores(*jugadores, *jugadores);
+    if (_comprobarVictoria(*jugadores) != 0)
+        return;
+
+    _avanzarMisiones(*jugadores);
+    printf("\n");
+    if (_comprobarVictoria(*jugadores) != 0)
+        return;
+
+    _expulsarImpostor(*jugadores);
+    if (_comprobarVictoria(*jugadores) != 0)
+        return;
 }
 
 // Función que imprime los datos de un usuario cuyo nombre se introduce por teclado
@@ -395,33 +568,13 @@ void consultarJugador(abb jugadores) {
         if (!es_vacia_cola(j.tareas)) {
             _imprimirTarea(primero(j.tareas));
         } else {
-            printf("| %-12s | %c || %-44s |\n", "", ' ', "No hay tarea asignada");
+            printf("| %-12s || %-44s |\n", "", "No hay tarea asignada");
         }
-    }
-}
-
-// Función privada recursiva que imprime los jugadores en la misma habitación
-void _buscarHabitacion(abb jugadores, abb *habitaciones, char *habitacion) {
-    tipoelem E;
-    // Si los jugadores no están vacíos, se lee el elemento
-    if (!es_vacio(jugadores)) {
-        leer(jugadores, &E);
-        if (!es_vacia_cola(E.tareas)) {
-            // Y si la habitación es la misma a la deseada, se mete en el árbol de habitaciones
-            tipoelemCola tarea = primero(E.tareas);
-            if (strcmp(tarea.tareaLugar, habitacion) == 0) {
-                insertar(habitaciones, E);
-            }
-        }
-
-        // Se repite el mismo proceso con los posibles hijos
-        _buscarHabitacion(izq(jugadores), habitaciones, habitacion);
-        _buscarHabitacion(der(jugadores), habitaciones, habitacion);
     }
 }
 
 //Función que imprime todos los usuarios que están en una habitación determinada
-void consultarPorHabitacion(abb jugadores) {
+void consultarPorHabitacion(abb jugadores, int jugando) {
     // Se pregunta la habitación que se desea
     char *h = (char *) malloc(sizeof(int));
     printf("Escoge una habitación:\n");
@@ -486,7 +639,7 @@ void consultarPorHabitacion(abb jugadores) {
     _buscarHabitacion(jugadores, &habitaciones, lugar);
     printf("Jugadores en %s:\n", lugar);
     // Y se imprime los jugadores en la habitación
-    listadoJugadores(habitaciones);
+    listadoJugadores(habitaciones, jugando);
     // No se puede destruir el árbol, ya que sus hijos son los jugadores
 }
 
