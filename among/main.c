@@ -80,7 +80,7 @@ int menu(abb *jugadores, unsigned short *jugando) {
             if (!*jugando) {
                 *jugando = generarPartida(jugadores);
             } else {
-                jugarPartida(jugadores);
+                *jugando = !jugarPartida(jugadores);
             }
             break;
 

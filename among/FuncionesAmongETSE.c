@@ -333,6 +333,10 @@ int generarPartida(abb *jugadores) {
                 abb aux;
                 crear(&aux);
                 aux = *jugadores;
+                if (es_vacio(aux)) {
+                    printf("No hay jugadores para escoger\n");
+                    return 0;
+                }
                 tipoelem nodo;
                 // Si r=2, entonces es que la raiz actual del arbol auxiliar es apta para ser seleccionada
                 while (r != 2) {
@@ -401,11 +405,14 @@ void _buscarHabitacion(abb jugadores, abb *habitaciones, char *habitacion) {
     }
 }
 
+// Función para seleccionar a un tripulante de forma aleatoria
+// Recibe un árbol de posibles jugadores a matar, y un puntero al jugador en cuestión
 void _seleccionarMuerto(abb jugadores, tipoelem *tripulante) {
     tipoelem jugador;
     if (!es_vacio(jugadores)) {
         _seleccionarMuerto(izq(jugadores), tripulante);
         leer(jugadores, &jugador);
+        // Se asigna en caso de que no haya jugador asignado o si de forma aleatoria hay que asignarle
         if (jugador.rol == 'C' && ((*tripulante).rol == '\0' || _aleatorio(0, 1))) {
             *tripulante = jugador;
         }
@@ -413,18 +420,22 @@ void _seleccionarMuerto(abb jugadores, tipoelem *tripulante) {
     }
 }
 
+// Función para matar a un tripulante cuando hay un impostor
 void _matar(abb habitaciones, abb jugadores) {
     tipoelem tripulante;
     tripulante.rol = '\0';
     _seleccionarMuerto(habitaciones, &tripulante);
 
+    // Se comprueba que haya algún posible jugador a matar
     if (tripulante.rol != '\0') {
         tripulante.rol = 'K';
         modificar(jugadores, tripulante);
-        printf("El jugador %s ha muerto\n", tripulante.nombreJugador);
+        printf("\e[31;1mEl jugador %s ha sido asesignado\e[0m\n", tripulante.nombreJugador);
     }
 }
 
+// Funcion privada recursiva para buscar impostores y matar
+// Se buscan los posibles impostores, y para cada uno de ellos se buscan posibles víctimas
 void _buscarImpostores(abb jugadores, abb jugadores2) {
     tipoelem jugador;
     if (!es_vacio(jugadores2)) {
@@ -440,10 +451,12 @@ void _buscarImpostores(abb jugadores, abb jugadores2) {
     }
 }
 
+// Función privada para "realizar" tareas en jugadores
 void _siguienteTarea(tipoelem jugador) {
     tipoelemCola tarea = primero(jugador.tareas);
+    // Se imprimen en rojo los jugadores muertos
     if (jugador.rol == 'K') {
-        printf("\e[91m");
+        printf("\e[31m");
     }
     printf("| %-12s || %-27s > %-14s |\n", jugador.nombreJugador, tarea.tarea, tarea.tareaLugar);
     if (jugador.rol == 'K') {
@@ -452,6 +465,7 @@ void _siguienteTarea(tipoelem jugador) {
     suprimir_cola(&jugador.tareas);
 }
 
+// Función privada para recorrer todo el árbol y realizar las tareas
 void _avanzarMisiones(abb jugadores) {
     tipoelem jugador;
     if (!es_vacio(jugadores)) {
@@ -464,6 +478,7 @@ void _avanzarMisiones(abb jugadores) {
     }
 }
 
+// Función privada para seleccionar un jugador y expulsarlo de la nave
 void _expulsarImpostor(abb jugadores) {
     tipoelem jugador;
     while (1) {
@@ -484,9 +499,9 @@ void _expulsarImpostor(abb jugadores) {
                 printf("El jugador ya está muerto o no está en la partida!\n");
             } else {
                 if (jugador.rol == 'C') {
-                    printf("El jugador %s era un tripulante!\n", jugador.nombreJugador);
+                    printf("\e[33;1mEl jugador %s era un tripulante!\e[0m\n", jugador.nombreJugador);
                 } else {
-                    printf("El jugador %s era un impostor!\n", jugador.nombreJugador);
+                    printf("\e[32;1mEl jugador %s era un impostor!\e[0m\n", jugador.nombreJugador);
                 }
                 jugador.rol = 'K';
                 modificar(jugadores, jugador);
@@ -496,6 +511,7 @@ void _expulsarImpostor(abb jugadores) {
     }
 }
 
+// Función privada para comprobar posibles victorias, y pasar a los punteros los respectivos comprobantes
 void _comprobarVictoriaR(abb jugadores, int *tareasPendientes, int *tripulantes, int *impostores) {
     tipoelem jugador;
     if (!es_vacio(jugadores)) {
@@ -513,36 +529,40 @@ void _comprobarVictoriaR(abb jugadores, int *tareasPendientes, int *tripulantes,
     }
 }
 
+// Función privada para comprobar si hay victoria en el árbol de jugadores
 int _comprobarVictoria(abb jugadores) {
     int tareasPendientes = 0, tripulantes = 0, impostores = 0;
     _comprobarVictoriaR(jugadores, &tareasPendientes, &tripulantes, &impostores);
 
     if (!impostores || !tareasPendientes) {
-        printf("VICTORIA DE TRIPULANTES\n");
+        printf("\e[42m\e[30;1VICTORIA DE TRIPULANTES\e[0m\n");
         return 1;
     } else if (tripulantes <= impostores) {
-        printf("VICTORIA DE IMPOSTORES\n");
+        printf("\e[43m\e[30;1mVICTORIA DE IMPOSTORES\e[0m\n");
         return -1;
     }
     return 0;
 }
 
-void jugarPartida(abb *jugadores) {
+// Función para realizar turnos en partida, que devuelve 1 al acabar
+int jugarPartida(abb *jugadores) {
     if (_comprobarVictoria(*jugadores) != 0)
-        return;
+        return 1;
 
     _buscarImpostores(*jugadores, *jugadores);
+    printf("\n");
     if (_comprobarVictoria(*jugadores) != 0)
-        return;
+        return 1;
 
     _avanzarMisiones(*jugadores);
     printf("\n");
     if (_comprobarVictoria(*jugadores) != 0)
-        return;
+        return 1;
 
     _expulsarImpostor(*jugadores);
     if (_comprobarVictoria(*jugadores) != 0)
-        return;
+        return 1;
+    return 0;
 }
 
 // Función que imprime los datos de un usuario cuyo nombre se introduce por teclado

@@ -37,7 +37,7 @@ int generarPartida(abb *jugadores);
  * Juega la partida
  * @param A
  */
-void jugarPartida(abb *jugadores);
+int jugarPartida(abb *jugadores);
 
 /**
  * Consulta los datos de un jugador
