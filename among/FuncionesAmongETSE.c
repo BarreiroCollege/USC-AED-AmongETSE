@@ -16,7 +16,7 @@ unsigned int _aleatorio(int inf, int sup) {
 void _inicializarJugador(tipoelem *registro) { // inicializa los campos rol,descripcionTarea y lugarTarea
     // Se utiliza el caracter de espacio para indicar un rol sin asignar
     registro->rol = ' ';
-    // Cadenas de texto vacías para las tareas
+    // Se libera la memoria y se vuelve a crear
     crear_cola(&registro->tareas);
 }
 
@@ -115,7 +115,7 @@ void _listadoJugadores(abb A, int jugando) {
         leer(A, &E);
         if ((jugando && E.rol != ' ') || !jugando) {
             if (E.rol == 'K') {
-                printf("\e[91m");
+                printf("\e[31m");
             }
             _imprimirJugador(E);
             _imprimirTareas(&E.tareas);
@@ -238,9 +238,16 @@ int generarPartida(abb *jugadores) {
     char *nJugadores = (char *) malloc(sizeof(char) * 2);
     // Modo de juego que el usuario desea, siendo M manual y A automático
     char modoJuego;
+    // Si se deben mostrar los impostores o no
+    char confirmarImpostores;
 
     // Se limpian los datos antes de cada generación
     _limpiarDatos(*jugadores);
+
+    // Se pregunta el modo de selección de jugadores
+    printf("Selecciona el modo de juego (N = normal | O = oculto)\n");
+    printf("> ");
+    scanf(" %s", &confirmarImpostores);
 
     printf("Número de jugadores (4-10):\n");
     printf("> ");
@@ -382,6 +389,12 @@ int generarPartida(abb *jugadores) {
     // Se copian los datos de partida a los jugadores de main
     _copiarPartida(jugadores, partida);
     printf("Partida creada\n");
+
+    // En caso de querer ocultar impostores, se devolverá un 2 indicando que no se mostrará el rol de una persona
+    // expulsada ni cuantos impostores quedan.
+    if (confirmarImpostores == 'O' || confirmarImpostores == 'o') {
+        return 2;
+    }
     return 1;
 }
 
@@ -436,18 +449,24 @@ void _matar(abb habitaciones, abb jugadores) {
 
 // Funcion privada recursiva para buscar impostores y matar
 // Se buscan los posibles impostores, y para cada uno de ellos se buscan posibles víctimas
-void _buscarImpostores(abb jugadores, abb jugadores2) {
+// Tiene que recibir dos árboles: uno sobre el que iterar, y otro con la posición de la cima
+// para poder buscar jugadores en la habitación
+// Además, servirá como contador de impostores restantes
+void _buscarImpostores(abb jugadores, abb jugadores2, int *numImpostores) {
     tipoelem jugador;
     if (!es_vacio(jugadores2)) {
-        _buscarImpostores(jugadores, izq(jugadores2));
+        _buscarImpostores(jugadores, izq(jugadores2), numImpostores);
         leer(jugadores2, &jugador);
         if (jugador.rol == 'I') {
             abb habitaciones;
             crear(&habitaciones);
+            // Se buscan los jugadores en la habitación, y se mata
             _buscarHabitacion(jugadores, &habitaciones, primero(jugador.tareas).tareaLugar);
             _matar(habitaciones, jugadores);
+            // Incrementar en 1 el número de impostores
+            *numImpostores = *numImpostores + 1;
         }
-        _buscarImpostores(jugadores, der(jugadores2));
+        _buscarImpostores(jugadores, der(jugadores2), numImpostores);
     }
 }
 
@@ -479,29 +498,34 @@ void _avanzarMisiones(abb jugadores) {
 }
 
 // Función privada para seleccionar un jugador y expulsarlo de la nave
-void _expulsarImpostor(abb jugadores) {
+void _expulsarImpostor(abb jugadores, int modo) {
     tipoelem jugador;
     while (1) {
-        printf("\nNombre de usuario (tiene que empezar por @) a expulsar:\n");
+        printf("\n\e[36mNombre de usuario a expulsar:\n");
+        printf(">>\t\e[36;3mEscribe algo que no comience por @ si no quieres expulsar a nadie\e[0m\n");
         printf("> ");
         scanf(" %s", jugador.nombreJugador);
+        printf("\n");
 
         // Si el nombre no comienza por arroba, rechazar
         if (jugador.nombreJugador[0] != '@') {
-            printf("Los nombres de jugador han de empezar por @\n");
-        }
-
-        if (!es_miembro(jugadores, jugador)) {
+            printf("No se expulsa a nadie...\n");
+            break;
+        } else if (!es_miembro(jugadores, jugador)) {
             printf("El jugador %s no existe!\n", jugador.nombreJugador);
         } else {
             buscar_nodo(jugadores, jugador.nombreJugador, &jugador);
             if (jugador.rol != 'C' && jugador.rol != 'I') {
                 printf("El jugador ya está muerto o no está en la partida!\n");
             } else {
-                if (jugador.rol == 'C') {
-                    printf("\e[33;1mEl jugador %s era un tripulante!\e[0m\n", jugador.nombreJugador);
+                if (modo == 1) {
+                    if (jugador.rol == 'C') {
+                        printf("\e[33;1mEl jugador %s era un tripulante!\e[0m\n", jugador.nombreJugador);
+                    } else {
+                        printf("\e[32;1mEl jugador %s era un impostor!\e[0m\n", jugador.nombreJugador);
+                    }
                 } else {
-                    printf("\e[32;1mEl jugador %s era un impostor!\e[0m\n", jugador.nombreJugador);
+                    printf("\e[35;1mEl jugador %s era... Pues no se sabe :/\e[0m\n", jugador.nombreJugador);
                 }
                 jugador.rol = 'K';
                 modificar(jugadores, jugador);
@@ -535,7 +559,7 @@ int _comprobarVictoria(abb jugadores) {
     _comprobarVictoriaR(jugadores, &tareasPendientes, &tripulantes, &impostores);
 
     if (!impostores || !tareasPendientes) {
-        printf("\e[42m\e[30;1VICTORIA DE TRIPULANTES\e[0m\n");
+        printf("\e[42m\e[30;1mVICTORIA DE TRIPULANTES\e[0m\n");
         return 1;
     } else if (tripulantes <= impostores) {
         printf("\e[43m\e[30;1mVICTORIA DE IMPOSTORES\e[0m\n");
@@ -545,11 +569,12 @@ int _comprobarVictoria(abb jugadores) {
 }
 
 // Función para realizar turnos en partida, que devuelve 1 al acabar
-int jugarPartida(abb *jugadores) {
+int jugarPartida(abb *jugadores, int modo) {
     if (_comprobarVictoria(*jugadores) != 0)
         return 1;
 
-    _buscarImpostores(*jugadores, *jugadores);
+    int numImpostores;
+    _buscarImpostores(*jugadores, *jugadores, &numImpostores);
     printf("\n");
     if (_comprobarVictoria(*jugadores) != 0)
         return 1;
@@ -559,7 +584,14 @@ int jugarPartida(abb *jugadores) {
     if (_comprobarVictoria(*jugadores) != 0)
         return 1;
 
-    _expulsarImpostor(*jugadores);
+    if (modo == 1) {
+        printf("\e[35;4mQueda%s %d impostor%s...\e[0m\n", numImpostores > 1 ? "n" : "", numImpostores,
+               numImpostores > 1 ? "es" : "");
+    } else {
+        printf("\e[35;4mQuedan... Pues no se sabe cuantos impostores quedan :/\e[0m\n");
+    }
+
+    _expulsarImpostor(*jugadores, modo);
     if (_comprobarVictoria(*jugadores) != 0)
         return 1;
     return 0;

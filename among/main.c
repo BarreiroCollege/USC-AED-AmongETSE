@@ -4,28 +4,35 @@
 #include <time.h>
 #include "FuncionesAmongETSE.h"
 
+/**
+ * Los cambios adicionales son varios cambios pequeños para mejorar las posibilidades de juego:
+ * menu() -> en vez de jugar partida continuamente, se permiten usar otras opciones del menú durante la partida
+ * _expulsarImpostor() -> se permite NO expulsar a algún jugador al final de cada turno
+ * generarPartida() -> se permite jugar sin saber cuando se expulsa a un impostor ni cuantos hay
+ */
+
 
 int menu(abb *jugadores, unsigned short *jugando);
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     // Semilla para aleatorios, se llamar sólo una vez al principio de main
     srand((unsigned int) time(NULL));
     unsigned short jugando = 0;
-    
+
     // Crear el árbol de jugadores
     abb jugadores;
     crear(&jugadores);
-    
+
     // Leer el archivo de disco
     leerArchivo(&jugadores);
-    
+
     // Menú
     int partida = 1;
     while (partida) {
         partida = menu(&jugadores, &jugando);
     }
 
-    
+
     // Destruir el árbol al finalizar
     destruir(&jugadores);
 
@@ -47,7 +54,9 @@ int menu(abb *jugadores, unsigned short *jugando) {
     }
     printf("u.\tConsulta por usuario de la última tarea asignada\n");
     printf("h.\tConsulta por habitación\n");
-    printf("f.\tGuardar archivo\n");
+    if (!*jugando) {
+        printf("f.\tGuardar archivo\n");
+    }
     printf("s.\tSalir de la partida\n");
     printf("\n> ");
 
@@ -59,13 +68,15 @@ int menu(abb *jugadores, unsigned short *jugando) {
         // Alta de un jugador
         case 'a':
         case 'A':
-            altaJugador(jugadores);
+            if (!*jugando)
+                altaJugador(jugadores);
             break;
 
         // Baja de un jugador
         case 'b':
         case 'B':
-            bajaJugador(jugadores);
+            if (!*jugando)
+                bajaJugador(jugadores);
             break;
 
         // Listado por orden alfabética de los jugadores
@@ -77,10 +88,12 @@ int menu(abb *jugadores, unsigned short *jugando) {
         // Generar datos iniciales de la partida
         case 'g':
         case 'G':
+        case 'j':
+        case 'J':
             if (!*jugando) {
                 *jugando = generarPartida(jugadores);
-            } else {
-                *jugando = !jugarPartida(jugadores);
+            } else if (jugarPartida(jugadores, *jugando)) {
+                *jugando = 0;
             }
             break;
 
@@ -99,7 +112,8 @@ int menu(abb *jugadores, unsigned short *jugando) {
         // Guardar árbol de jugadores en el archivo
         case 'F':
         case 'f':
-            guardarArchivo(*jugadores);
+            if (!*jugando)
+                guardarArchivo(*jugadores);
             break;
 
         // Salir del programa...
