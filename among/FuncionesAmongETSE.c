@@ -518,6 +518,7 @@ void _expulsarImpostor(abb jugadores, int modo) {
             if (jugador.rol != 'C' && jugador.rol != 'I') {
                 printf("El jugador ya está muerto o no está en la partida!\n");
             } else {
+                // En caso de ser modo de juego 1, se muestra el rol del expulsado
                 if (modo == 1) {
                     if (jugador.rol == 'C') {
                         printf("\e[33;1mEl jugador %s era un tripulante!\e[0m\n", jugador.nombreJugador);
@@ -563,27 +564,28 @@ int _comprobarVictoria(abb jugadores) {
         return 1;
     } else if (tripulantes <= impostores) {
         printf("\e[43m\e[30;1mVICTORIA DE IMPOSTORES\e[0m\n");
-        return -1;
+        return 1;
     }
     return 0;
 }
 
 // Función para realizar turnos en partida, que devuelve 1 al acabar
 int jugarPartida(abb *jugadores, int modo) {
-    if (_comprobarVictoria(*jugadores) != 0)
+    if (_comprobarVictoria(*jugadores))
         return 1;
 
     int numImpostores;
     _buscarImpostores(*jugadores, *jugadores, &numImpostores);
     printf("\n");
-    if (_comprobarVictoria(*jugadores) != 0)
+    if (_comprobarVictoria(*jugadores))
         return 1;
 
     _avanzarMisiones(*jugadores);
     printf("\n");
-    if (_comprobarVictoria(*jugadores) != 0)
+    if (_comprobarVictoria(*jugadores))
         return 1;
 
+    // En caso de ser modo de juego 1, se meustra el número de impostores restantes
     if (modo == 1) {
         printf("\e[35;4mQueda%s %d impostor%s...\e[0m\n", numImpostores > 1 ? "n" : "", numImpostores,
                numImpostores > 1 ? "es" : "");
@@ -592,9 +594,7 @@ int jugarPartida(abb *jugadores, int modo) {
     }
 
     _expulsarImpostor(*jugadores, modo);
-    if (_comprobarVictoria(*jugadores) != 0)
-        return 1;
-    return 0;
+    return _comprobarVictoria(*jugadores);
 }
 
 // Función que imprime los datos de un usuario cuyo nombre se introduce por teclado
