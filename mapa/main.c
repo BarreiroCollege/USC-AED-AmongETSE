@@ -13,12 +13,16 @@ int main(int argc, char** argv) {
 
     //Creo el grafo
     crear_grafo(&G);
+
+    leer_grafo(&G);
+
     do {
-        printf("\n\na. Insertar nuevo vertice\n");
-        printf("b. Eliminar vertice\n");
-        printf("c. Crear arco\n");
-        printf("d. Eliminar arco\n");
-        printf("i. Imprimir grafo\n");
+        printf("\n\n");
+        printf("a. Añadir habitación\n");
+        printf("b. Clausurar habitación\n");
+        printf("c. Crear comunicación\n");
+        printf("d. Eliminar comunicación\n");
+        printf("i. Imprimir mapa\n");
         printf("s. Salir\n");
 
         printf("Opcion: ");
@@ -26,19 +30,19 @@ int main(int argc, char** argv) {
 
         switch (opcion) {
             case 'a':case'A':
-                introducir_vertice(&G);
+                nueva_habitacion(&G);
                 break;
             case 'b':case 'B':
-                eliminar_vertice(&G);
+                eliminar_habitacion(&G);
                 break;
             case 'c': case 'C':
-                nuevo_arco(&G);
+                nueva_comunicacion(&G);
                 break;
             case 'd': case 'D':
-                eliminar_arco(&G);
+                eliminar_comunicacion(&G);
                 break;
             case 'i': case 'I':
-                imprimir_grafo(G);
+                imprimir_mapa(G);
                 break;
             case 's': case 'S':
                 opcion='s';
@@ -47,6 +51,8 @@ int main(int argc, char** argv) {
                 printf("Opción equivocada\n");
         }
     } while (opcion != 's');
+
+    guardar_grafo(G);
 
     //Al salir, liberamos la memoria del TAD, lo destruimos
     borrar_grafo(&G);
