@@ -19,7 +19,7 @@ struct tipografo {
 // https://stackoverflow.com/a/5820991
 int strcicmp(char const *a, char const *b) {
     for (;; a++, b++) {
-        int d = tolower((unsigned char)*a) - tolower((unsigned char)*b);
+        int d = tolower((unsigned char) *a) - tolower((unsigned char) *b);
         if (d != 0 || !*a)
             return d;
     }
@@ -30,14 +30,14 @@ int strcicmp(char const *a, char const *b) {
  * Esta función devuelve 0 si los dos nodos son iguales
  * -1 si V1 está antes de V2 o 1 en otro caso.
  */
-int _comparar_vertices(tipovertice V1, tipovertice V2){
+int _comparar_vertices(tipovertice V1, tipovertice V2) {
     int r = strcicmp(V1.habitacion, V2.habitacion);
     return r < 0 ? -1 : r > 0 ? 1 : 0;
 }
 
 //Creación del grafo con 0 nodos
 void crear_grafo(grafo *G) {
-    *G = (struct tipografo*) malloc(sizeof (struct tipografo));
+    *G = (struct tipografo *) malloc(sizeof(struct tipografo));
     (*G)->N = 0;
 }
 
@@ -48,7 +48,7 @@ int posicion(grafo G, tipovertice V) {
     //comparo V con todos los vertices almacenados en VERTICES
     while (contador < G->N) {
         //if (G->VERTICES[contador]==V)  //encontré la posicion de V
-        if (_comparar_vertices(G->VERTICES[contador], V) == 0){
+        if (_comparar_vertices(G->VERTICES[contador], V) == 0) {
             return contador;
         }
         contador++;
@@ -82,28 +82,28 @@ int insertar_vertice(grafo *G, tipovertice Vert) {
         (*G)->AT[i][((*G)->N) - 1] = 0;
         (*G)->AT[((*G)->N) - 1][i] = 0;
     }
-    return (*G)->N-1;
+    return (*G)->N - 1;
 }
 
 //Borra un vertice del grafo
 void borrar_vertice(grafo *G, tipovertice Vert) {
     int F, C, P, N = (*G)->N;
     P = posicion(*G, Vert);
-    if(P == -1){
+    if (P == -1) {
         return;
     }
     //if (P >= 0 && P < (*G)->N) {
-    for (F = P; F < N - 1; F++){
+    for (F = P; F < N - 1; F++) {
         (*G)->VERTICES[F] = (*G)->VERTICES[F + 1];
     }
-    for (C = P; C < N - 1; C++){
-        for (F = 0; F < N; F++){
+    for (C = P; C < N - 1; C++) {
+        for (F = 0; F < N; F++) {
             (*G)->AI[F][C] = (*G)->AI[F][C + 1];
             (*G)->AT[F][C] = (*G)->AT[F][C + 1];
         }
     }
-    for (F = P; F < N - 1; F++){
-        for (C = 0; C < N; C++){
+    for (F = P; F < N - 1; F++) {
+        for (C = 0; C < N; C++) {
             (*G)->AI[F][C] = (*G)->AI[F + 1][C];
             (*G)->AT[F][C] = (*G)->AT[F + 1][C];
         }
@@ -118,6 +118,7 @@ void crear_arco_I(grafo *G, int pos1, int pos2, int valor) {
         (*G)->AI[pos2][pos1] = valor;
     }
 }
+
 void crear_arco_T(grafo *G, int pos1, int pos2, int valor) {
     (*G)->AT[pos1][pos2] = valor;
     (*G)->AT[pos2][pos1] = valor;
@@ -129,7 +130,11 @@ void borrar_arco_I(grafo *G, int pos1, int pos2) {
     (*G)->AI[pos1][pos2] = 0;
     (*G)->AI[pos2][pos1] = 0;
 }
+
 void borrar_arco_T(grafo *G, int pos1, int pos2) {
+    if ((*G)->AT[pos1][pos2] == (*G)->AI[pos1][pos2]) {
+        borrar_arco_I(G, pos1, pos2);
+    }
     (*G)->AT[pos1][pos2] = 0;
     (*G)->AT[pos2][pos1] = 0;
 }
@@ -138,6 +143,7 @@ void borrar_arco_T(grafo *G, int pos1, int pos2) {
 int son_adyacentes_I(grafo G, int pos1, int pos2) {
     return G->AI[pos1][pos2];
 }
+
 //Devuelve 1 si VERTICES(pos1) y VERTICES(pos2) son vértices adyacentes
 int son_adyacentes_T(grafo G, int pos1, int pos2) {
     return G->AT[pos1][pos2];
@@ -155,7 +161,7 @@ int num_vertices(grafo G) {
 }
 
 //Devuelve el vector de vértices VERTICES del grafo G
-tipovertice* array_vertices(grafo G) {
+tipovertice *array_vertices(grafo G) {
     return G->VERTICES;
 }
 

@@ -172,7 +172,7 @@ void imprimir_mapa(grafo G) {
                 }
                 // Si el valor de impostor no es igual al de tripulante, hay otro camino
                 if (valorI != valorT) {
-                    printf("\t... {%d} %-14s\n", valorI, VECTOR[i].habitacion);
+                    printf("\t... {%d} %-14s\n", valorI, VECTOR[j].habitacion);
                 }
             }
         }
