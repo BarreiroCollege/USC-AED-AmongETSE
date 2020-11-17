@@ -3,6 +3,8 @@
 
 #include "grafo.h"
 
+#define INFINITY 1000
+
 //FUNCIONES DEL PROGRAMA DE PRUEBA DE GRAFOS
 //Opción a del menú, introducir un vertice en el grafo
 void nueva_habitacion(grafo *G);
@@ -24,6 +26,10 @@ void leer_grafo(grafo *G);
 
 //Función para escribir el grafo a un archivo
 void guardar_grafo(grafo G);
+
+void ruta_rapida(grafo G);
+
+void coste_minimo(grafo G);
 
 
 #endif	/* FUNCIONES_H */

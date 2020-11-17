@@ -3,19 +3,7 @@
 #include <string.h>
 
 #include "grafo.h"
-
-/**
- * #define INFIITY 1000
- * struct camino {
- *  int verticeprevio;
- *  char mapa;
- * }
- *
- * void _floyd(grafo G, int origen, int destino, char tipo);
- * void _printPath(struct camino P[][MAXVERTICES], int i, int j, tipovertice *V, int N);
- * void _printSolucion(int matrix[][MAXVERTICES], int N);
- * void _printPrevVertex(struct camino P[][MAXVERTICES], int N);
- */
+#include "funciones.h"
 
 //FUNCIONES DEL PROGRAMA DE PRUEBA DE GRAFOS
 
@@ -276,4 +264,179 @@ void guardar_grafo(grafo G) {
 
     // Se cierra el archivo
     fclose(f);
+}
+
+void _printMatrix(int **matrix, int V) {
+    int i, j;
+    for (i = 0; i < V; i++) {
+        for (j = 0; j < V; j++) {
+            if (matrix[i][j] == INFINITY)
+                printf("%10s", "INF");
+            else
+                printf("%10d", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+char *_resolverHabitacion(grafo G, int v) {
+    tipovertice *habitaciones = array_vertices(G);
+
+    for (int i = 0; i < num_vertices(G); i++) {
+        if (posicion(G, habitaciones[i]) == v) {
+            return habitaciones[i].habitacion;
+        }
+    }
+
+    return NULL;
+}
+
+void _imprimirCamino(grafo G, int **matrix, int origen, int destino, int anterior, char tipo, int *coste) {
+    if (origen != destino) {
+        _imprimirCamino(G, matrix, origen, matrix[origen][destino], destino, tipo, coste);
+    }
+
+    int ady, esImp = 0;
+    if (tipo == 'I' || tipo == 'i') {
+        ady = son_adyacentes_I(G, destino, anterior);
+        if (ady != son_adyacentes_T(G, destino, anterior)) {
+            esImp = 1;
+        }
+    } else {
+        ady = son_adyacentes_T(G, destino, anterior);
+    }
+
+    *coste += ady;
+    printf("%s%s", _resolverHabitacion(G, destino), destino != anterior ? (esImp ? " .. " : " -- ") : "");
+}
+
+int **_floyd(grafo G, char tipo) {
+    int V = num_vertices(G);
+    int i, j, k, ady;
+
+    int **D = (int **) malloc(sizeof(int) * V * V);
+    for (i = 0; i < V; i++) {
+        D[i] = (int *) malloc(sizeof(int) * V);
+    }
+    int **P = (int **) malloc(sizeof(int) * V * V);
+    for (i = 0; i < V; i++) {
+        P[i] = (int *) malloc(sizeof(int) * V);
+    }
+
+    for (i = 0; i < V; i++) {
+        for (j = 0; j < V; j++) {
+            if (tipo == 'i' || tipo == 'I') {
+                ady = son_adyacentes_I(G, i, j);
+            } else {
+                ady = son_adyacentes_T(G, i, j);
+            }
+            if (ady != 0 && i != j) {
+                D[i][j] = ady;
+                P[i][j] = i;
+            } else if (i == j) {
+                D[i][j] = 0;
+                P[i][j] = 0;
+            } else {
+                D[i][j] = INFINITY;
+                P[i][j] = 0;
+            }
+        }
+    }
+
+    for (k = 0; k < V; k++) {
+        for (i = 0; i < V; i++) {
+            for (j = 0; j < V; j++) {
+                if (D[i][j] > D[i][k] + D[k][j]) {
+                    D[i][j] = D[i][k] + D[k][j];
+                    P[i][j] = P[k][j];
+                }
+            }
+        }
+    }
+
+    return P;
+}
+
+void ruta_rapida(grafo G) {
+    tipovertice v1, v2;
+    char t[2];
+
+    printf("Habitación de origen: ");
+    scanf("%s", v1.habitacion);
+    if (!existe_vertice(G, v1)) {
+        printf("Esta habitación no existe en el mapa\n");
+        return;
+    }
+
+    printf("Habitación de destino: ");
+    scanf("%s", v2.habitacion);
+    if (!existe_vertice(G, v2)) {
+        printf("Esta habitación no existe en el mapa\n");
+        return;
+    }
+
+    printf("Rol {T = Tripulante | I = Impostor}: ");
+    scanf("%s", t);
+    if (*t != 'I' && *t != 'i') {
+        *t = 'C';
+    }
+
+    int coste = 0;
+    _imprimirCamino(G, _floyd(G, *t), posicion(G, v1), posicion(G, v2), posicion(G, v2), *t, &coste);
+    printf("\n");
+    printf("Coste: %d\n", coste);
+}
+
+void _prim(grafo G, char tipo) {
+    int N = num_vertices(G);
+    int *s = (int *) malloc(sizeof(int) * N);
+    memset(s, 0, N);
+    int numArcos = 0, distanciaTotal = 0;
+    s[0] = 1;
+
+    int minimo, vx, vy, ady, esImp;
+    int i, j;
+    while (numArcos < (N - 1)) {
+        minimo = INFINITY, vx = 0, vy = 0, ady = 0, esImp = 0;
+
+        for (i = 0; i < N; i++) {
+            if (s[i] == 1) {
+                // printf("S=%d\n", i);
+                for (j = 0; j < N; j++) {
+                    if (tipo == 'I' || tipo == 'i') {
+                        ady = son_adyacentes_I(G, i, j);
+                        if (ady != son_adyacentes_T(G, i, j)) {
+                            esImp = 1;
+                        }
+                    } else {
+                        ady = son_adyacentes_T(G, i, j);
+                    }
+                    if (s[j] != 1 && ady > 0) {
+                        if (minimo > ady) {
+                            minimo = ady, vx = i, vy = j;
+                        }
+                    }
+                }
+            }
+        }
+
+        s[vy] = 1, numArcos++;
+        printf("%15s %s %-15s : %d\n",
+               _resolverHabitacion(G, vx), esImp ? ".." : "--", _resolverHabitacion(G, vy), minimo);
+        distanciaTotal += minimo;
+    }
+
+    printf("Distancia Total del Árbol de Expansión de Coste Mínimo: %d\n", distanciaTotal);
+}
+
+void coste_minimo(grafo G) {
+    char t[2];
+
+    printf("Rol {T = Tripulante | I = Impostor}: ");
+    scanf("%s", t);
+    if (*t != 'I' && *t != 'i') {
+        *t = 'C';
+    }
+
+    _prim(G, *t);
 }
