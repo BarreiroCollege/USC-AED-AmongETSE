@@ -266,23 +266,12 @@ void guardar_grafo(grafo G) {
     fclose(f);
 }
 
-void _printMatrix(int **matrix, int V) {
-    int i, j;
-    for (i = 0; i < V; i++) {
-        for (j = 0; j < V; j++) {
-            if (matrix[i][j] == INFINITY)
-                printf("%10s", "INF");
-            else
-                printf("%10d", matrix[i][j]);
-        }
-        printf("\n");
-    }
-}
-
+// Función para obtener el nombre de una habitación en función de su posición
 char *_resolverHabitacion(grafo G, int v) {
     tipovertice *habitaciones = array_vertices(G);
 
     for (int i = 0; i < num_vertices(G); i++) {
+        // Si la posición en el grafo del vértice es la misma que la posición dada, se devuelve el nombre
         if (posicion(G, habitaciones[i]) == v) {
             return habitaciones[i].habitacion;
         }
@@ -291,11 +280,14 @@ char *_resolverHabitacion(grafo G, int v) {
     return NULL;
 }
 
+// Función privada para imprimir un camino a partir de una matriz de Floyd
 void _imprimirCamino(grafo G, int **matrix, int origen, int destino, int anterior, char tipo, int *coste) {
     if (origen != destino) {
+        // Si el origen no es igual al destino, se llama recursivamente a la función resolviendo el destino
         _imprimirCamino(G, matrix, origen, matrix[origen][destino], destino, tipo, coste);
     }
 
+    // Obtener el tipo de camino y su valor
     int ady, esImp = 0;
     if (tipo == 'I' || tipo == 'i') {
         ady = son_adyacentes_I(G, destino, anterior);
@@ -306,14 +298,17 @@ void _imprimirCamino(grafo G, int **matrix, int origen, int destino, int anterio
         ady = son_adyacentes_T(G, destino, anterior);
     }
 
+    // Incrementar el coste, e imprimir por pantalla el camino parcial
     *coste += ady;
     printf("%s%s", _resolverHabitacion(G, destino), destino != anterior ? (esImp ? " .. " : " -- ") : "");
 }
 
+// Función privada para aplicar el algoritmo de Floyd
 int **_floyd(grafo G, char tipo) {
     int V = num_vertices(G);
     int i, j, k, ady;
 
+    // Reservar memoria para las matrices: primero por para toda la matriz, y luego para la fila
     int **D = (int **) malloc(sizeof(int) * V * V);
     for (i = 0; i < V; i++) {
         D[i] = (int *) malloc(sizeof(int) * V);
@@ -325,6 +320,7 @@ int **_floyd(grafo G, char tipo) {
 
     for (i = 0; i < V; i++) {
         for (j = 0; j < V; j++) {
+            // Para cada elemento, aplicar la regla de las matrices y asignar los valores
             if (tipo == 'i' || tipo == 'I') {
                 ady = son_adyacentes_I(G, i, j);
             } else {
@@ -346,6 +342,7 @@ int **_floyd(grafo G, char tipo) {
     for (k = 0; k < V; k++) {
         for (i = 0; i < V; i++) {
             for (j = 0; j < V; j++) {
+                // Comprobar si existe algún arco con un posible valor menor
                 if (D[i][j] > D[i][k] + D[k][j]) {
                     D[i][j] = D[i][k] + D[k][j];
                     P[i][j] = P[k][j];
@@ -354,9 +351,11 @@ int **_floyd(grafo G, char tipo) {
         }
     }
 
+    // Devolver la matriz
     return P;
 }
 
+// Función pública para obtener la ruta más rápida de una habitación a otra
 void ruta_rapida(grafo G) {
     tipovertice v1, v2;
     char t[2];
@@ -381,12 +380,14 @@ void ruta_rapida(grafo G) {
         *t = 'C';
     }
 
+    // Llamar a la función para imprimir camino, pasando la matriz de Floyd e imprimir el coste total
     int coste = 0;
     _imprimirCamino(G, _floyd(G, *t), posicion(G, v1), posicion(G, v2), posicion(G, v2), *t, &coste);
     printf("\n");
     printf("Coste: %d\n", coste);
 }
 
+// Función privada para aplicar el agoritmo de prim
 void _prim(grafo G, char tipo) {
     int N = num_vertices(G);
     int *s = (int *) malloc(sizeof(int) * N);
@@ -396,21 +397,24 @@ void _prim(grafo G, char tipo) {
 
     int minimo, vx, vy, ady, esImp;
     int i, j;
+    // Ejecutar mientras el número de arcos no sea el mismo que el de vértices menos 1
     while (numArcos < (N - 1)) {
         minimo = INFINITY, vx = 0, vy = 0, ady = 0, esImp = 0;
 
+        // Para cada elemento, si el valor de i coincide con el que se quiere mirar
         for (i = 0; i < N; i++) {
             if (s[i] == 1) {
-                // printf("S=%d\n", i);
                 for (j = 0; j < N; j++) {
                     if (tipo == 'I' || tipo == 'i') {
                         ady = son_adyacentes_I(G, i, j);
                         if (ady != son_adyacentes_T(G, i, j)) {
+                            // Indicar que se ha de imprimir como si fuese una trampilla
                             esImp = 1;
                         }
                     } else {
                         ady = son_adyacentes_T(G, i, j);
                     }
+                    // Aplicar el algoritmo indicando que hay una ruta más óptima
                     if (s[j] != 1 && ady > 0) {
                         if (minimo > ady) {
                             minimo = ady, vx = i, vy = j;
@@ -420,6 +424,8 @@ void _prim(grafo G, char tipo) {
             }
         }
 
+        // Actualizar el valor del arco seleccionado, incrementar el número de arcos, imprimir por pantalla el camino
+        // e incrementar el valor de la distancia total
         s[vy] = 1, numArcos++;
         printf("%15s %s %-15s : %d\n",
                _resolverHabitacion(G, vx), esImp ? ".." : "--", _resolverHabitacion(G, vy), minimo);
@@ -429,6 +435,7 @@ void _prim(grafo G, char tipo) {
     printf("Distancia Total del Árbol de Expansión de Coste Mínimo: %d\n", distanciaTotal);
 }
 
+// Función pública para obtener el árbol de coste mínimo
 void coste_minimo(grafo G) {
     char t[2];
 
