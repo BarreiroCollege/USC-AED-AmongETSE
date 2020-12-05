@@ -399,7 +399,7 @@ void _prim(grafo G, char tipo) {
     int i, j;
     // Ejecutar mientras el número de arcos no sea el mismo que el de vértices menos 1
     while (numArcos < (N - 1)) {
-        minimo = INFINITY, vx = 0, vy = 0, ady = 0, esImp = 0;
+        minimo = INFINITY, vx = 0, vy = 00, esImp = 0;
 
         // Para cada elemento, si el valor de i coincide con el que se quiere mirar
         for (i = 0; i < N; i++) {
