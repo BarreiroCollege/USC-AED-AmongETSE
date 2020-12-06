@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "utils.h"
+#include "vars.h"
 
 char *ltrim(char *s) {
     while (isspace(*s)) s++;

@@ -1,8 +1,6 @@
 #ifndef TABLAS_UTILS_H
 #define TABLAS_UTILS_H
 
-#define NUM_JUGADORES 10000
-
 typedef struct {
     char nombre[15];
     char apellido1[15];
