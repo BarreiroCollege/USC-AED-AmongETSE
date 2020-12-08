@@ -107,9 +107,13 @@ int MiembroHash(TablaHash t, char *clavebuscar) {
     return enc;
 }
 
-int ColisionesProducidas(TablaHash t, tipoelem elemento) {
+int NumElementos(TablaHash t, tipoelem elemento) {
     int pos = Hash(elemento.clave);
     return (int) longitud(t[pos]);
+}
+
+int ColisionesProducidas(TablaHash t, tipoelem elemento) {
+    return NumElementos(t, elemento) > 0;
 }
 
 int PasosAdicionalesInsercion(TablaHash t, tipoelem elemento) {

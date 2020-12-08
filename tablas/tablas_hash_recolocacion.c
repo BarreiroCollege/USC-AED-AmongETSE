@@ -59,7 +59,7 @@ int Hash(char *cad) {
 
 /* RECOLOCACION LINEAL: depende del valor de la constante a*/
 
-int _ColisionesProducidasLineal(TablaHash t, char *cad) {
+int _NumElementosLineal(TablaHash t, char *cad) {
     int ini, aux, i;
     ini = Hash(cad);
 
@@ -69,7 +69,7 @@ int _ColisionesProducidasLineal(TablaHash t, char *cad) {
             return i;
         }
     }
-    return ini;
+    return -1;
 }
 
 int _PasosAdicionalesInsercionLineal(TablaHash t, char *cad) {
@@ -145,7 +145,7 @@ int _PosicionInsertarLineal(TablaHash t, char *cad) {
 
 /* RECOLOCACION CUADRATICA */
 
-int _ColisionesProducidasCuadratica(TablaHash t, char *cad) {
+int _NumElementosCuadratica(TablaHash t, char *cad) {
     int ini, aux, i;
     ini = Hash(cad);
 
@@ -155,7 +155,7 @@ int _ColisionesProducidasCuadratica(TablaHash t, char *cad) {
             return i;
         }
     }
-    return ini;
+    return -1;
 }
 
 int _PasosAdicionalesInsercionCuadratica(TablaHash t, char *cad) {
@@ -229,16 +229,29 @@ int _PosicionInsertar(TablaHash t, char *cad) {
     return _PosicionInsertarLineal(t, cad);
 }
 
+int NumElementos(TablaHash t, tipo_jugador e) {
+    if (RecLineal) {
+        return _NumElementosLineal(t, e.clave);
+    }
+    return _NumElementosCuadratica(t, e.clave);
+}
+
 int ColisionesProducidas(TablaHash t, tipo_jugador e) {
-    return _ColisionesProducidasLineal(t, e.clave);
+    return NumElementos(t, e) > 0;
 }
 
 int PasosAdicionalesInsercion(TablaHash t, tipo_jugador elemento) {
-    return _PasosAdicionalesInsercionLineal(t, elemento.clave);
+    if (RecLineal) {
+        return _PasosAdicionalesInsercionLineal(t, elemento.clave);
+    }
+    return _PasosAdicionalesInsercionCuadratica(t, elemento.clave);
 }
 
 int PasosAdicionalesBusqueda(TablaHash t, tipo_jugador elemento) {
-    return _PasosAdicionalesBusquedaLineal(t, elemento.clave);
+    if (RecLineal) {
+        return _PasosAdicionalesBusquedaLineal(t, elemento.clave);
+    }
+    return _PasosAdicionalesBusquedaCuadratica(t, elemento.clave);
 }
 
 /* Funcion que indica si un elemento está o no en la tabla */

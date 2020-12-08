@@ -18,6 +18,8 @@ int Hash(char *cad);
 
 int Busqueda(TablaHash t, char *clavebuscar, tipoelem *e);
 
+int NumElementos(TablaHash t, tipoelem elemento);
+
 int ColisionesProducidas(TablaHash t, tipoelem elemento);
 
 int PasosAdicionalesInsercion(TablaHash t, tipoelem elemento);

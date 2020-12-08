@@ -20,6 +20,8 @@ int Hash(char *cad);
 
 int MiembroHash(TablaHash t, char *cad);
 
+int NumElementos(TablaHash t, tipo_jugador e);
+
 int ColisionesProducidas(TablaHash t, tipo_jugador e);
 
 int PasosAdicionalesInsercion(TablaHash t, tipo_jugador elemento);

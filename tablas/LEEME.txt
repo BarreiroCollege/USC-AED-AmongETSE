@@ -5,11 +5,12 @@ Usando el CMakeLists.txt dado ya ejecutará cada proeycto automáticamente.
 
 Sin embargo, ambos proyectos han de compartir los siguientes archivos: "utils.c", "utils.h" y "vars.h".
 Creé el archivo "vars.h" para poder ajustar las variables A, K, HashF (cambia la función hash entre
-Hash1, Hash2 y Hash3) y Tam de manera más rápida.
+Hash1, Hash2 y Hash3) y Tam de manera más rápida. También se puede configurar el tipo de recolocación
+poniendo RecLineal a 1 para la recolocación lineal, o a 0 para la cuadrática.
 
-Además, incluyo también el ZIP de colisiones, con todos los CSV generados para las combinaciones
-probadas. La primera columna indica la inserción y la segunda el número de elementos que ya había en
-ese mismo hash.
+Además, incluyo también el ZIP de número de elementos, con todos los CSV generados para las
+combinaciones probadas. La primera columna indica la inserción y la segunda el número de elementos
+que ya había en ese mismo hash.
 He realizado estos CSV ya que así podía dibujar una gráfica para cada combinación, y observar mejor
 como se repartían los elementos y cuantos producían conflictos en las tablas. En el informe se ve
 mejor.

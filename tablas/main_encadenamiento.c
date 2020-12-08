@@ -11,11 +11,14 @@ int main() {
     tipo_jugador *jugadores = leerDatos();
     // FILE *salida = fopen("encadenamiento.csv", "w");
 
-    // fprintf(salida, "Inserción,Colisiones\n");
+    // fprintf(salida, "Insercion,NumElementos\n");
+    int colisiones = 0;
     for (int i = 0; i < NUM_JUGADORES; i++) {
-        // fprintf(salida, "%d,%d\n", i, ColisionesProducidas(tabla, jugadores[i]));
+        // fprintf(salida, "%d,%d\n", i, NumElementos(tabla, jugadores[i]));
+        colisiones += ColisionesProducidas(tabla, jugadores[i]);
         InsertarHash(&tabla, jugadores[i]);
     }
+    printf("Colisiones=%d\n", colisiones);
     // fclose(salida);
 
     clock_t inicio, fin;
